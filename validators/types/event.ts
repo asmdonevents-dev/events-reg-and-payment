@@ -1,0 +1,150 @@
+import type { Event, EventAssignmentGroup, EventFormField, EventRegistration, EventSpeaker } from "@prisma/client";
+import { formatResponseValue, getResponsePreview } from "@/lib/form-fields";
+import { toFormFieldUI, type FormFieldUI } from "@/validators/types/form-field";
+import { toEventSpeakerUI, type EventSpeakerUI } from "@/validators/types/speaker";
+
+export interface AssignmentGroupUI {
+  id: string;
+  name: string;
+  capacity: number;
+  sortOrder: number;
+}
+
+export type EventWithCounts = Event & {
+  _count: { registrations: number };
+  formFields?: EventFormField[];
+  speakers?: EventSpeaker[];
+  assignmentGroups?: EventAssignmentGroup[];
+};
+
+export interface EventUI {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  bannerImage: string | null;
+  startDate: string;
+  endDate: string;
+  venue: string;
+  capacity: number;
+  isFree: boolean;
+  ticketPrice: number | null;
+  status: Event["status"];
+  registrationCount: number;
+  remainingSeats: number;
+  formFields: FormFieldUI[];
+  speakers: EventSpeakerUI[];
+  assignmentGroups: AssignmentGroupUI[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RegistrationUI {
+  id: string;
+  eventId: string;
+  eventTitle: string;
+  eventSlug: string;
+  eventVenue: string;
+  eventStartDate: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  responses: Record<string, string | string[] | boolean>;
+  labeledResponses: Array<{ label: string; value: string }>;
+  responsePreview: string;
+  assignedGroup: string | null;
+  status: EventRegistration["status"];
+  paymentRef: string | null;
+  paymentStatus: EventRegistration["paymentStatus"];
+  amount: number;
+  createdAt: string;
+}
+
+export function toAssignmentGroupUI(group: EventAssignmentGroup): AssignmentGroupUI {
+  return {
+    id: group.id,
+    name: group.name,
+    capacity: group.capacity,
+    sortOrder: group.sortOrder,
+  };
+}
+
+export function toEventUI(event: EventWithCounts): EventUI {
+  const registrationCount = event._count.registrations;
+  const formFields = (event.formFields ?? [])
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(toFormFieldUI);
+  const speakers = (event.speakers ?? [])
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(toEventSpeakerUI);
+  const assignmentGroups = (event.assignmentGroups ?? [])
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(toAssignmentGroupUI);
+
+  return {
+    id: event.id,
+    title: event.title,
+    slug: event.slug,
+    description: event.description,
+    bannerImage: event.bannerImage,
+    startDate: event.startDate.toISOString(),
+    endDate: event.endDate.toISOString(),
+    venue: event.venue,
+    capacity: event.capacity,
+    isFree: event.isFree,
+    ticketPrice: event.ticketPrice ? Number(event.ticketPrice) : null,
+    status: event.status,
+    registrationCount,
+    remainingSeats: Math.max(event.capacity - registrationCount, 0),
+    formFields,
+    speakers,
+    assignmentGroups,
+    createdAt: event.createdAt.toISOString(),
+    updatedAt: event.updatedAt.toISOString(),
+  };
+}
+
+export function toRegistrationUI(
+  registration: EventRegistration & {
+    event: Pick<Event, "title" | "slug" | "venue" | "startDate"> & {
+      formFields?: EventFormField[];
+    };
+    assignmentGroup?: { name: string } | null;
+  }
+): RegistrationUI {
+  const responses = (registration.responses ?? {}) as Record<
+    string,
+    string | string[] | boolean
+  >;
+  const formFields = (registration.event.formFields ?? [])
+    .slice()
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(toFormFieldUI);
+
+  return {
+    id: registration.id,
+    eventId: registration.eventId,
+    eventTitle: registration.event.title,
+    eventSlug: registration.event.slug,
+    eventVenue: registration.event.venue,
+    eventStartDate: registration.event.startDate.toISOString(),
+    contactName: registration.contactName ?? "",
+    contactEmail: registration.contactEmail ?? "",
+    contactPhone: registration.contactPhone ?? "",
+    responses,
+    labeledResponses: formFields.map((field) => ({
+      label: field.label,
+      value: formatResponseValue(responses[field.fieldKey]),
+    })),
+    responsePreview: getResponsePreview(formFields, responses),
+    assignedGroup: registration.assignmentGroup?.name ?? null,
+    status: registration.status,
+    paymentRef: registration.paymentRef,
+    paymentStatus: registration.paymentStatus,
+    amount: Number(registration.amount),
+    createdAt: registration.createdAt.toISOString(),
+  };
+}

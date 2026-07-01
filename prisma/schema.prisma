@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FREE
+}
+
+enum FormFieldType {
+  TEXT
+  TEXTAREA
+  EMAIL
+  PHONE
+  NUMBER
+  SELECT
+  RADIO
+  CHECKBOX
+  DATE
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(ADMIN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Event {
+  id            String              @id @default(cuid())
+  title         String
+  slug          String              @unique
+  description   String              @db.Text
+  bannerImage   String?
+  startDate     DateTime
+  endDate       DateTime
+  venue         String
+  capacity      Int
+  isFree        Boolean             @default(false)
+  ticketPrice   Decimal?            @db.Decimal(10, 2)
+  status        EventStatus         @default(DRAFT)
+  formFields        EventFormField[]
+  speakers          EventSpeaker[]
+  assignmentGroups  EventAssignmentGroup[]
+  registrations     EventRegistration[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+}
+
+model EventFormField {
+  id          String        @id @default(cuid())
+  eventId     String
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  label       String
+  fieldKey    String
+  fieldType   FormFieldType
+  placeholder String?
+  helpText    String?
+  required    Boolean       @default(true)
+  options     Json?
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([eventId, fieldKey])
+  @@index([eventId, sortOrder])
+}
+
+model EventSpeaker {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name      String
+  role      String?
+  bio       String?  @db.Text
+  photoUrl  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId, sortOrder])
+}
+
+model EventAssignmentGroup {
+  id            String              @id @default(cuid())
+  eventId       String
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name          String
+  capacity      Int                 @default(0)
+  sortOrder     Int                 @default(0)
+  registrations EventRegistration[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([eventId, sortOrder])
+}
+
+model EventRegistration {
+  id                 String                @id @default(cuid())
+  eventId            String
+  event              Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  assignmentGroupId  String?
+  assignmentGroup    EventAssignmentGroup? @relation(fields: [assignmentGroupId], references: [id], onDelete: SetNull)
+  responses          Json
+  contactEmail       String?
+  contactName        String?
+  contactPhone       String?
+  status             RegistrationStatus    @default(PENDING)
+  paymentRef         String?
+  paymentStatus      PaymentStatus         @default(UNPAID)
+  amount             Decimal               @default(0) @db.Decimal(10, 2)
+  createdAt          DateTime              @default(now())
+
+  @@index([eventId])
+  @@index([contactEmail])
+  @@index([assignmentGroupId])
+}
+
+model PaymentSettings {
+  id                 String   @id @default("default")
+  paystackPublicKey  String
+  paystackSecretKey  String
+  updatedAt          DateTime @updatedAt
+}

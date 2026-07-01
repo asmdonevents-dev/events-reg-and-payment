@@ -1,0 +1,224 @@
+"use client";
+
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { isMultiValueField, normalizeFieldOptions } from "@/lib/form-fields";
+import {
+  buildDynamicRegistrationDefaults,
+  buildDynamicRegistrationSchema,
+  type DynamicRegistrationValues,
+} from "@/validators/schemas/registration";
+import type { FormFieldUI } from "@/validators/types/form-field";
+
+interface DynamicRegistrationFormProps {
+  fields: FormFieldUI[];
+  onSubmit: (values: DynamicRegistrationValues) => Promise<void>;
+  children: React.ReactNode;
+}
+
+export default function DynamicRegistrationForm({
+  fields,
+  onSubmit,
+  children,
+}: DynamicRegistrationFormProps) {
+  const schema = useMemo(() => buildDynamicRegistrationSchema(fields), [fields]);
+  const defaultValues = useMemo(() => buildDynamicRegistrationDefaults(fields), [fields]);
+
+  const form = useForm<DynamicRegistrationValues>({
+    resolver: zodResolver(schema as never),
+    defaultValues,
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        {fields.map((field) => {
+          const options = normalizeFieldOptions(field.options);
+          const isMultiCheckbox = isMultiValueField(field);
+          const isSingleCheckbox =
+            field.fieldType === "CHECKBOX" && options.length === 0;
+
+          return (
+            <FormField
+              key={field.id}
+              control={form.control}
+              name={field.fieldKey}
+              render={({ field: formField }) => (
+                <FormItem>
+                  <FormLabel>
+                    {field.label}
+                    {field.required ? <span className="text-red-500"> *</span> : ""}
+                  </FormLabel>
+
+                  {field.fieldType === "TEXTAREA" ? (
+                    <FormControl>
+                      <Textarea
+                        rows={4}
+                        placeholder={field.placeholder ?? undefined}
+                        value={String(formField.value ?? "")}
+                        onChange={formField.onChange}
+                      />
+                    </FormControl>
+                  ) : null}
+
+                  {field.fieldType === "SELECT" ? (
+                    <Select
+                      value={String(formField.value ?? "")}
+                      onValueChange={formField.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder={field.placeholder ?? "Select an option"}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {options.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null}
+
+                  {field.fieldType === "RADIO" ? (
+                    <FormControl>
+                      <RadioGroup
+                        value={String(formField.value ?? "")}
+                        onValueChange={formField.onChange}
+                        className="gap-3"
+                      >
+                        {options.map((option) => (
+                          <div key={option} className="flex items-center gap-2">
+                            <RadioGroupItem
+                              value={option}
+                              id={`${field.id}-${option}`}
+                            />
+                            <Label
+                              htmlFor={`${field.id}-${option}`}
+                              className="font-normal"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                  ) : null}
+
+                  {isMultiCheckbox ? (
+                    <FormControl>
+                      <div className="flex flex-col gap-2">
+                        {options.map((option) => {
+                          const selected = Array.isArray(formField.value)
+                            ? formField.value
+                            : [];
+
+                          return (
+                            <label key={option} className="flex items-center gap-2 text-sm">
+                              <Checkbox
+                                checked={selected.includes(option)}
+                                onCheckedChange={(checked) => {
+                                  const next = checked
+                                    ? [...selected, option]
+                                    : selected.filter((value) => value !== option);
+                                  formField.onChange(next);
+                                }}
+                              />
+                              {option}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </FormControl>
+                  ) : null}
+
+                  {isSingleCheckbox ? (
+                    <FormItem className="flex flex-row items-center gap-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={Boolean(formField.value)}
+                          onCheckedChange={(checked) => formField.onChange(checked === true)}
+                        />
+                      </FormControl>
+                      <FormLabel>{field.placeholder || "Yes"}</FormLabel>
+                    </FormItem>
+                  ) : null}
+
+                  {["TEXT", "EMAIL", "PHONE"].includes(field.fieldType) ? (
+                    <FormControl>
+                      <Input
+                        type={
+                          field.fieldType === "EMAIL"
+                            ? "email"
+                            : field.fieldType === "PHONE"
+                              ? "tel"
+                              : "text"
+                        }
+                        placeholder={field.placeholder ?? undefined}
+                        value={String(formField.value ?? "")}
+                        onChange={formField.onChange}
+                      />
+                    </FormControl>
+                  ) : null}
+
+                  {field.fieldType === "NUMBER" ? (
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder={field.placeholder ?? undefined}
+                        value={String(formField.value ?? "")}
+                        onChange={formField.onChange}
+                      />
+                    </FormControl>
+                  ) : null}
+
+                  {field.fieldType === "DATE" ? (
+                    <FormControl>
+                      <Input
+                        type="date"
+                        value={String(formField.value ?? "")}
+                        onChange={formField.onChange}
+                      />
+                    </FormControl>
+                  ) : null}
+
+                  {field.helpText ? (
+                    <FormDescription>{field.helpText}</FormDescription>
+                  ) : null}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          );
+        })}
+
+        {children}
+      </form>
+    </Form>
+  );
+}
