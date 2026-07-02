@@ -99,7 +99,7 @@ export default function FormFieldBuilder() {
           const showOptions = fieldHasOptions(fieldType);
 
           return (
-            <div key={field.id} className="flex flex-col gap-3 rounded-lg border p-4">
+            <div key={field.id} className="flex min-w-0 flex-col gap-3 overflow-hidden rounded-lg border p-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-medium">Field {index + 1}</p>
                 <div className="flex items-center gap-1">
@@ -240,7 +240,7 @@ export default function FormFieldBuilder() {
                   control={form.control}
                   name={`formFields.${index}.options`}
                   render={({ field: optionsField }) => (
-                    <FormItem>
+                    <FormItem className="min-w-0">
                       <FormLabel>Options</FormLabel>
                       <FormControl>
                         <FormTagInput

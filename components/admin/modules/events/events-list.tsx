@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import PageBreadcrumb from "@/components/admin/header/pagebreadcrumb";
 import PageHeader from "@/components/admin/header/pageHeader";
@@ -61,7 +67,8 @@ function sortEvents(events: EventUI[], sortBy: SortOption) {
   switch (sortBy) {
     case "date-created-asc":
       return sorted.sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
     case "title-asc":
       return sorted.sort((a, b) => a.title.localeCompare(b.title));
@@ -70,7 +77,8 @@ function sortEvents(events: EventUI[], sortBy: SortOption) {
     case "date-created-desc":
     default:
       return sorted.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }
 }
@@ -81,7 +89,7 @@ function EventThumbnail({ event }: { event: EventUI }) {
       <ImagePreview
         src={event.bannerImage}
         alt={`${event.title} banner`}
-        className="block h-24 w-36 shrink-0 overflow-hidden rounded-lg"
+        className="block h-36 w-full shrink-0 overflow-hidden rounded-lg sm:h-24 sm:w-36"
         imageClassName="object-cover"
       />
     );
@@ -89,7 +97,7 @@ function EventThumbnail({ event }: { event: EventUI }) {
 
   return (
     <div
-      className="flex h-24 w-36 shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground"
+      className="flex h-36 w-full shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground sm:h-24 sm:w-36"
       aria-hidden
     >
       <CalendarDays className="size-8 opacity-60" />
@@ -111,7 +119,7 @@ export default function EventsList() {
 
   const availableYears = useMemo(() => {
     const years = new Set(
-      events.map((event) => new Date(event.startDate).getFullYear())
+      events.map((event) => new Date(event.startDate).getFullYear()),
     );
     return Array.from(years).sort((a, b) => b - a);
   }, [events]);
@@ -135,7 +143,7 @@ export default function EventsList() {
   const totalPages = Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE));
   const paginatedEvents = filteredEvents.slice(
     (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    currentPage * PAGE_SIZE,
   );
 
   async function handleDelete() {
@@ -171,16 +179,19 @@ export default function EventsList() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 px-0 sm:px-2">
       <PageBreadcrumb />
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader
           title="Events"
           description="Create and manage organization events."
         />
         <Link
           href="/admin/events/new"
-          className={cn(buttonVariants(), "inline-flex gap-2")}
+          className={cn(
+            buttonVariants(),
+            "inline-flex w-full shrink-0 gap-2 sm:w-auto",
+          )}
         >
           <Plus className="size-4" />
           New event
@@ -257,8 +268,12 @@ export default function EventsList() {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date-created-desc">Date created (newest)</SelectItem>
-                <SelectItem value="date-created-asc">Date created (oldest)</SelectItem>
+                <SelectItem value="date-created-desc">
+                  Date created (newest)
+                </SelectItem>
+                <SelectItem value="date-created-asc">
+                  Date created (oldest)
+                </SelectItem>
                 <SelectItem value="title-asc">Alphabetical (A–Z)</SelectItem>
                 <SelectItem value="title-desc">Alphabetical (Z–A)</SelectItem>
               </SelectContent>
@@ -278,12 +293,14 @@ export default function EventsList() {
           ) : (
             paginatedEvents.map((eventItem) => (
               <Card key={eventItem.id}>
-                <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
-                  <div className="flex min-w-0 flex-1 gap-4">
+                <CardContent className="flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-start">
                     <EventThumbnail event={eventItem} />
-                    <div className="flex min-w-0 flex-col gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="">{eventItem.title}</h3>
+                        <h3 className="min-w-0 text-base leading-snug wrap-break-word">
+                          {eventItem.title}
+                        </h3>
                         <Badge variant="outline">{eventItem.status}</Badge>
                         <Badge>
                           {eventItem.isFree
@@ -292,21 +309,25 @@ export default function EventsList() {
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {formatDate(eventItem.startDate)} · {eventItem.venue}
+                        {formatDate(eventItem.startDate)}
+                      </p>
+                      <p className="text-sm text-muted-foreground wrap-break-word">
+                        {eventItem.venue}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {eventItem.registrationCount}/{eventItem.capacity} registered
+                        {eventItem.registrationCount}/{eventItem.capacity}{" "}
+                        registered
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 border-t pt-3 lg:border-t-0 lg:pt-0">
                     <Link
                       href={`/events/${eventItem.slug}`}
                       target="_blank"
                       className={cn(
                         buttonVariants({ variant: "outline", size: "sm" }),
-                        "inline-flex"
+                        "inline-flex flex-1 justify-center sm:flex-none",
                       )}
                     >
                       View public page
@@ -333,7 +354,9 @@ export default function EventsList() {
                         <DropdownMenuItem
                           onSelect={() => {
                             setOpenMenuId(null);
-                            runAfterDropdownClose(() => setDeleteTarget(eventItem));
+                            runAfterDropdownClose(() =>
+                              setDeleteTarget(eventItem),
+                            );
                           }}
                         >
                           <Trash2 className="size-4" />

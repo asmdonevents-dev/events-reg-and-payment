@@ -50,7 +50,7 @@ export default function EditEventPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 p-4 px-0 sm:px-2">
       <PageBreadcrumb />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <PageHeader

@@ -22,13 +22,14 @@ import LogoutModal from "@/components/admin/logout-modal";
 import { useAdminSession } from "@/hooks/use-admin-session";
 import { runAfterDropdownClose } from "@/lib/dropdown-modal";
 
-function getAdminDisplayName(email?: string) {
+function getAdminDisplayName(name?: string, email?: string) {
+  if (name?.trim()) return name.trim();
   if (!email) return "Admin";
   return email.split("@")[0]?.replace(/[._-]/g, " ") ?? "Admin";
 }
 
-function getAdminInitials(email?: string) {
-  const displayName = getAdminDisplayName(email);
+function getAdminInitials(name?: string, email?: string) {
+  const displayName = getAdminDisplayName(name, email);
   const parts = displayName.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
@@ -45,8 +46,8 @@ export default function AvatarDropdownComponent({
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: admin } = useAdminSession();
 
-  const displayName = getAdminDisplayName(admin?.email);
-  const initials = getAdminInitials(admin?.email);
+  const displayName = getAdminDisplayName(admin?.name, admin?.email);
+  const initials = getAdminInitials(admin?.name, admin?.email);
 
   return (
     <>

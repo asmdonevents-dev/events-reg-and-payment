@@ -42,13 +42,16 @@ enum FormFieldType {
 }
 
 model Admin {
-  id           String    @id @default(cuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  role         AdminRole @default(ADMIN)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                         String    @id @default(cuid())
+  name                       String
+  email                      String    @unique
+  passwordHash               String
+  role                       AdminRole @default(ADMIN)
+  pendingEmail               String?
+  emailVerificationCodeHash  String?
+  emailVerificationExpiresAt DateTime?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 }
 
 model Event {

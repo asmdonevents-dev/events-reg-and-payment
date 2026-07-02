@@ -34,7 +34,10 @@ import AssignmentGroupBuilder from "@/components/admin/modules/events/assignment
 import SpeakerBuilder from "@/components/admin/modules/events/speaker-builder";
 import { useCreateEvent, useUpdateEvent } from "@/hooks/use-events";
 import { DEFAULT_EVENT_FORM_FIELDS } from "@/lib/form-fields";
-import { fromDateTimeLocalValue, toDateTimeLocalValue } from "@/lib/datetime-local";
+import {
+  fromDateTimeLocalValue,
+  toDateTimeLocalValue,
+} from "@/lib/datetime-local";
 import { slugify } from "@/lib/utils";
 import {
   EventSchema,
@@ -43,8 +46,14 @@ import {
   type EventFormValues,
 } from "@/validators/schemas/event";
 import type { EventUI } from "@/validators/types/event";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-type FormStepId = "details" | "schedule" | "registration" | "speakers" | "assignments";
+type FormStepId =
+  | "details"
+  | "schedule"
+  | "registration"
+  | "speakers"
+  | "assignments";
 
 const FORM_STEPS: ReadonlyArray<{
   id: FormStepId;
@@ -83,7 +92,10 @@ interface ManageEventFormProps {
   onSuccess: () => void;
 }
 
-export default function ManageEventForm({ event, onSuccess }: ManageEventFormProps) {
+export default function ManageEventForm({
+  event,
+  onSuccess,
+}: ManageEventFormProps) {
   const { mutateAsync: createEvent, isLoading: isCreating } = useCreateEvent();
   const { mutateAsync: updateEvent, isLoading: isUpdating } = useUpdateEvent();
 
@@ -97,7 +109,9 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
       startDate: event?.startDate
         ? new Date(event.startDate).toISOString().slice(0, 16)
         : "",
-      endDate: event?.endDate ? new Date(event.endDate).toISOString().slice(0, 16) : "",
+      endDate: event?.endDate
+        ? new Date(event.endDate).toISOString().slice(0, 16)
+        : "",
       venue: event?.venue ?? "",
       capacity: event?.capacity ?? 100,
       isFree: event?.isFree ?? false,
@@ -138,7 +152,9 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
   const [activeTab, setActiveTab] = useState<FormStepId>("details");
   const isFree = form.watch("isFree");
   const isLoading = isCreating || isUpdating;
-  const currentStepIndex = FORM_STEPS.findIndex((step) => step.id === activeTab);
+  const currentStepIndex = FORM_STEPS.findIndex(
+    (step) => step.id === activeTab,
+  );
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === FORM_STEPS.length - 1;
 
@@ -272,15 +288,21 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
         })}
         className="flex flex-col gap-6"
       >
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList variant="line" className="w-full justify-start">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="registration">Registration</TabsTrigger>
-            <TabsTrigger value="speakers">Speakers</TabsTrigger>
-            <TabsTrigger value="assignments">Assignments</TabsTrigger>
-          </TabsList>
-
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <ScrollArea className="">
+            <TabsList variant="line" className="w-full justify-start">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="schedule">Schedule</TabsTrigger>
+              <TabsTrigger value="registration">Registration</TabsTrigger>
+              <TabsTrigger value="speakers">Speakers</TabsTrigger>
+              <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
           <TabsContent value="details" className="mt-4 flex flex-col gap-4">
             <FormField
               control={form.control}
@@ -294,9 +316,13 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                       onChange={(inputEvent) => {
                         field.onChange(inputEvent);
                         if (!slugManuallyEdited.current) {
-                          form.setValue("slug", slugify(inputEvent.target.value), {
-                            shouldValidate: true,
-                          });
+                          form.setValue(
+                            "slug",
+                            slugify(inputEvent.target.value),
+                            {
+                              shouldValidate: true,
+                            },
+                          );
                         }
                       }}
                     />
@@ -395,7 +421,9 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                     <FormControl>
                       <DateTimePicker
                         value={toDateTimeLocalValue(field.value)}
-                        onChange={(date) => field.onChange(fromDateTimeLocalValue(date))}
+                        onChange={(date) =>
+                          field.onChange(fromDateTimeLocalValue(date))
+                        }
                         placeholder="Select start date & time"
                       />
                     </FormControl>
@@ -412,7 +440,9 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                     <FormControl>
                       <DateTimePicker
                         value={toDateTimeLocalValue(field.value)}
-                        onChange={(date) => field.onChange(fromDateTimeLocalValue(date))}
+                        onChange={(date) =>
+                          field.onChange(fromDateTimeLocalValue(date))
+                        }
                         placeholder="Select end date & time"
                       />
                     </FormControl>
@@ -443,7 +473,11 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                 <FormItem>
                   <FormLabel>Capacity</FormLabel>
                   <FormControl>
-                    <NumberInput value={field.value} onChange={field.onChange} min={1} />
+                    <NumberInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      min={1}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -453,7 +487,10 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
             <StepActions />
           </TabsContent>
 
-          <TabsContent value="registration" className="mt-4 flex flex-col gap-4">
+          <TabsContent
+            value="registration"
+            className="mt-4 flex flex-col gap-4"
+          >
             <FormField
               control={form.control}
               name="isFree"
@@ -462,7 +499,9 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
                     />
                   </FormControl>
                   <FormLabel>Free event</FormLabel>
@@ -478,7 +517,11 @@ export default function ManageEventForm({ event, onSuccess }: ManageEventFormPro
                   <FormItem>
                     <FormLabel>Ticket price (NGN)</FormLabel>
                     <FormControl>
-                      <NumberInput value={field.value} onChange={field.onChange} min={0} />
+                      <NumberInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        min={0}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

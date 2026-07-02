@@ -3,6 +3,7 @@ import {
   Building2,
   CalendarCheck2,
   CalendarDays,
+  CogIcon,
   CreditCard,
   FileText,
   LayoutDashboard,
@@ -33,7 +34,15 @@ export const sidebarItems: SidebarItem[] = [
     subItems: [
       { label: "All Events", href: "/admin/events" },
       { label: "Registrations", href: "/admin/registrations" },
+    ],
+  },
+  {
+    icon: Settings,
+    label: "Settings",
+    href: "/admin/settings",
+    subItems: [
       { label: "Payment Settings", href: "/admin/settings/payment" },
+      { label: "Account Settings", href: "/admin/settings" },
     ],
   },
 ];

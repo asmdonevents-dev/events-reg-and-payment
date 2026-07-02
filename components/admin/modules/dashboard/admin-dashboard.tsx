@@ -103,7 +103,7 @@ function StatCard({
         <CardContent className="py-0">
           <div className="truncate text-2xl font-bold">{value}</div>
           <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-          <Badge variant="secondary" className="mt-2 text-xs">
+          <Badge variant="outline" size={"sm"} className="mt-2 text-xs">
             {trend}
           </Badge>
         </CardContent>

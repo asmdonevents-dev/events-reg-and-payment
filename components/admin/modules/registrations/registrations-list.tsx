@@ -192,7 +192,7 @@ export default function RegistrationsList() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <PageBreadcrumb />
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader
           title="Registrations"
           description="View, print name tags, and manage attendee registrations."
@@ -201,6 +201,7 @@ export default function RegistrationsList() {
           variant="primary"
           onClick={handleExport}
           disabled={filteredRegistrations.length === 0}
+          className="w-full shrink-0 sm:w-auto"
         >
           <Download className="size-4" data-icon="inline-start" />
           Export Excel
@@ -301,53 +302,78 @@ export default function RegistrationsList() {
           ) : (
             paginatedRegistrations.map((registration) => (
               <Card key={registration.id}>
-                <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
-                  <div className="flex flex-col gap-2">
+                <CardContent className="flex flex-col gap-4 py-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0 flex-1 flex flex-col gap-1.5 lg:gap-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="">
+                      <h3 className="min-w-0 text-base leading-snug wrap-break-word">
                         {registration.contactName || registration.responsePreview}
                       </h3>
                       <Badge variant="outline">{registration.status}</Badge>
                       <Badge>{registration.paymentStatus}</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground wrap-break-word">
                       {registration.eventTitle}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {registration.contactEmail}
-                      {registration.contactPhone ? ` · ${registration.contactPhone}` : ""}
-                    </p>
-                    {registration.assignedGroup ? (
-                      <p className="text-sm text-muted-foreground">
-                        Group: {registration.assignedGroup}
-                      </p>
-                    ) : null}
+                    <div className="flex flex-col gap-1.5 lg:hidden">
+                      {registration.contactEmail ? (
+                        <p className="text-sm text-muted-foreground wrap-break-word">
+                          {registration.contactEmail}
+                        </p>
+                      ) : null}
+                      {registration.contactPhone ? (
+                        <p className="text-sm text-muted-foreground">
+                          {registration.contactPhone}
+                        </p>
+                      ) : null}
+                      {registration.assignedGroup ? (
+                        <p className="text-sm text-muted-foreground wrap-break-word">
+                          Group: {registration.assignedGroup}
+                        </p>
+                      ) : null}
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {formatCurrency(registration.amount)} ·{" "}
                       {formatExportDate(registration.createdAt)}
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="grid grid-cols-2 gap-2 border-t pt-3 lg:flex lg:shrink-0 lg:items-center lg:border-t-0 lg:pt-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setSelectedRegistration(registration)}
+                      className="w-full lg:w-auto"
                     >
                       <Eye className="size-4" data-icon="inline-start" />
                       View
                     </Button>
+
+                    {/* for mobile */}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setDeleteTarget(registration)}
+                      className="w-full lg:w-auto inline-flex md:hidden"
+                    >
+                      <Trash2 className="size-4" data-icon="inline-start" />
+                      Delete
+                    </Button>
+
                     {canPrintTag(registration) ? (
                       <DownloadNameTagButton
                         registration={registration}
                         label="Download name tag"
                         size="sm"
+                        className="col-span-2 w-full lg:col-span-1 lg:w-auto"
                       />
                     ) : null}
+
+                    {/* for desktop */}
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => setDeleteTarget(registration)}
+                      className="w-full lg:w-auto hidden md:inline-flex"
                     >
                       <Trash2 className="size-4" data-icon="inline-start" />
                       Delete

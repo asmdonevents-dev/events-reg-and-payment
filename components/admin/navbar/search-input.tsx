@@ -57,7 +57,7 @@ export default function SearchInputComponent() {
     <>
       <button
         type="button"
-        className="border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full max-w-sm rounded-md border px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] hidden md:inline-flex"
+        className="bg-background text-foreground placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full max-w-sm rounded-md px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] hidden md:inline-flex"
         onClick={() => setOpen(true)}
       >
         <span className="flex grow items-center">
@@ -77,7 +77,7 @@ export default function SearchInputComponent() {
 
       <button
         type="button"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background p-2 text-muted-foreground shadow-sm transition-colors hover:bg-accent md:hidden"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-background p-2 text-muted-foreground shadow-sm transition-colors hover:bg-accent md:hidden"
         onClick={() => setOpen(true)}
         aria-label="Search admin pages"
       >

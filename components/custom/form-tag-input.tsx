@@ -49,26 +49,35 @@ export default function FormTagInput({
   };
 
   return (
-    <TagInput
-      id={id}
-      tags={tags}
-      setTags={handleTagsChange}
-      placeholder={placeholder}
-      disabled={disabled}
-      styleClasses={{
-        tagList: {
-          container: "gap-1",
-        },
-        input: cn(inputVariants({ variant: "lg" })),
-        tag: {
-          body: cn(badgeVariants({ variant: "outline" })),
-          closeButton: cn(badgeButtonVariants()),
-        },
-      }}
-      activeTagIndex={activeTagIndex}
-      setActiveTagIndex={setActiveTagIndex}
-      inlineTags={false}
-      inputFieldPosition="top"
-    />
+    <div className="min-w-0 w-full">
+      <TagInput
+        id={id}
+        tags={tags}
+        setTags={handleTagsChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        direction="column"
+        styleClasses={{
+          tagList: {
+            container: "w-full min-w-0 flex flex-col gap-2",
+          },
+          input: cn(inputVariants({ variant: "lg" }), "min-w-0 w-full"),
+          tag: {
+            body: cn(
+              badgeVariants({ variant: "outline" }),
+              "flex h-auto min-h-7 w-full max-w-full items-start justify-between gap-2 whitespace-normal wrap-break-word py-1.5 text-left leading-snug [&>button]:shrink-0"
+            ),
+            closeButton: cn(
+              badgeButtonVariants(),
+              "h-auto shrink-0 self-start py-1"
+            ),
+          },
+        }}
+        activeTagIndex={activeTagIndex}
+        setActiveTagIndex={setActiveTagIndex}
+        inlineTags={false}
+        inputFieldPosition="top"
+      />
+    </div>
   );
 }

@@ -1,4 +1,63 @@
+import type { Metadata } from "next";
 import EventDetailPage from "@/components/pages/Events/EventDetail";
+import { getEventBySlug } from "@/data/events";
+
+function getSiteUrl() {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+}
+
+function toPlainDescription(description: string) {
+  return description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const event = await getEventBySlug(slug);
+  const siteUrl = getSiteUrl();
+
+  if (!event || event.status !== "PUBLISHED") {
+    return {
+      title: "Event not found | ASM Events",
+    };
+  }
+
+  const url = `${siteUrl}/events/${event.slug}`;
+  const description =
+    toPlainDescription(event.description).slice(0, 160) ||
+    `Register for ${event.title} on ASM Events.`;
+
+  return {
+    title: `${event.title} | ASM Events`,
+    description,
+    openGraph: {
+      title: event.title,
+      description,
+      url,
+      siteName: "ASM Events",
+      type: "website",
+      ...(event.bannerImage
+        ? {
+            images: [
+              {
+                url: event.bannerImage,
+                alt: `${event.title} flyer`,
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: event.bannerImage ? "summary_large_image" : "summary",
+      title: event.title,
+      description,
+      ...(event.bannerImage ? { images: [event.bannerImage] } : {}),
+    },
+  };
+}
 
 export default async function EventSlugPage({
   params,

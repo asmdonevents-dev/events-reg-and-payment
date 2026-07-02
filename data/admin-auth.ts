@@ -46,9 +46,30 @@ export async function getAdminSession() {
   const session = await getSession();
   if (!session) return null;
 
+  const admin = await prisma.admin.findUnique({
+    where: { id: session.adminId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      pendingEmail: true,
+      emailVerificationExpiresAt: true,
+    },
+  });
+
+  if (!admin) return null;
+
   return {
-    id: session.adminId,
-    email: session.email,
-    role: session.role,
+    id: admin.id,
+    name: admin.name,
+    email: admin.email,
+    role: admin.role,
+    pendingEmail: admin.pendingEmail,
+    emailVerificationPending: Boolean(
+      admin.pendingEmail &&
+        admin.emailVerificationExpiresAt &&
+        admin.emailVerificationExpiresAt > new Date()
+    ),
   };
 }
