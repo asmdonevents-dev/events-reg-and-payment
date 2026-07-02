@@ -23,16 +23,41 @@ export const FormFieldSchema = z
     helpText: z.string(),
     required: z.boolean(),
     options: z.array(z.string()),
+    dependsOn: z.string().nullable().optional(),
+    conditionalOptions: z
+      .record(z.string(), z.array(z.string()))
+      .nullable()
+      .optional(),
     sortOrder: z.number().int().min(0),
   })
   .superRefine((field, ctx) => {
-    if (fieldHasOptions(field.fieldType)) {
+    const hasDependency = Boolean(field.dependsOn?.trim());
+
+    if (fieldHasOptions(field.fieldType) && !hasDependency) {
       const options = normalizeFieldOptions(field.options);
       if (options.length === 0) {
         ctx.addIssue({
           code: "custom",
           message: "Add at least one option for this field type",
           path: ["options"],
+        });
+      }
+    }
+
+    if (
+      hasDependency &&
+      (field.fieldType === "SELECT" || field.fieldType === "RADIO")
+    ) {
+      const conditionalOptions = field.conditionalOptions ?? {};
+      const hasAnyOptions = Object.values(conditionalOptions).some(
+        (options) => normalizeFieldOptions(options).length > 0
+      );
+
+      if (!hasAnyOptions) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Add at least one option for each parent value",
+          path: ["conditionalOptions"],
         });
       }
     }
@@ -63,6 +88,40 @@ export const FormFieldsSchema = z
         message: "Include at least one Email field for confirmations and payments",
         path: [],
       });
+    }
+
+    for (const [index, field] of fields.entries()) {
+      if (!field.dependsOn?.trim()) continue;
+
+      const parentIndex = fields.findIndex(
+        (candidate) => candidate.fieldKey === field.dependsOn
+      );
+
+      if (parentIndex === -1) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Parent field not found",
+          path: [index, "dependsOn"],
+        });
+        continue;
+      }
+
+      const parent = fields[parentIndex];
+      if (parent.fieldType !== "SELECT" && parent.fieldType !== "RADIO") {
+        ctx.addIssue({
+          code: "custom",
+          message: "Parent field must be a Select or Radio group",
+          path: [index, "dependsOn"],
+        });
+      }
+
+      if (parent.fieldKey === field.fieldKey) {
+        ctx.addIssue({
+          code: "custom",
+          message: "A field cannot depend on itself",
+          path: [index, "dependsOn"],
+        });
+      }
     }
   });
 

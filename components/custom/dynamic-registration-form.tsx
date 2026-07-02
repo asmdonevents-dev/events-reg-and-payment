@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import { useForm, useWatch, type Control, type UseFormSetValue } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -38,6 +38,144 @@ interface DynamicRegistrationFormProps {
   children: React.ReactNode;
 }
 
+function useDependentOptions(field: FormFieldUI, control: Control<DynamicRegistrationValues>) {
+  const parentValue = useWatch({
+    control,
+    name: field.dependsOn ?? "",
+    disabled: !field.dependsOn,
+  });
+
+  return useMemo(() => {
+    if (!field.dependsOn || typeof parentValue !== "string" || !parentValue) {
+      return [];
+    }
+
+    return normalizeFieldOptions(field.conditionalOptions?.[parentValue] ?? []);
+  }, [field.conditionalOptions, field.dependsOn, parentValue]);
+}
+
+function DependentSelectField({
+  field,
+  control,
+  setValue,
+}: {
+  field: FormFieldUI;
+  control: Control<DynamicRegistrationValues>;
+  setValue: UseFormSetValue<DynamicRegistrationValues>;
+}) {
+  const options = useDependentOptions(field, control);
+  const parentValue = useWatch({
+    control,
+    name: field.dependsOn ?? "",
+    disabled: !field.dependsOn,
+  });
+
+  useEffect(() => {
+    setValue(field.fieldKey, "");
+  }, [field.fieldKey, parentValue, setValue]);
+
+  return (
+    <FormField
+      control={control}
+      name={field.fieldKey}
+      render={({ field: formField }) => (
+        <FormItem>
+          <FormLabel>
+            {field.label}
+            {field.required ? <span className="text-red-500"> *</span> : ""}
+          </FormLabel>
+          <Select
+            value={String(formField.value ?? "")}
+            onValueChange={formField.onChange}
+            disabled={!parentValue}
+          >
+            <FormControl>
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={
+                    parentValue
+                      ? field.placeholder ?? "Select an option"
+                      : "Select the parent field first"
+                  }
+                />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {field.helpText ? <FormDescription>{field.helpText}</FormDescription> : null}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+function DependentRadioField({
+  field,
+  control,
+  setValue,
+}: {
+  field: FormFieldUI;
+  control: Control<DynamicRegistrationValues>;
+  setValue: UseFormSetValue<DynamicRegistrationValues>;
+}) {
+  const options = useDependentOptions(field, control);
+  const parentValue = useWatch({
+    control,
+    name: field.dependsOn ?? "",
+    disabled: !field.dependsOn,
+  });
+
+  useEffect(() => {
+    setValue(field.fieldKey, "");
+  }, [field.fieldKey, parentValue, setValue]);
+
+  return (
+    <FormField
+      control={control}
+      name={field.fieldKey}
+      render={({ field: formField }) => (
+        <FormItem>
+          <FormLabel>
+            {field.label}
+            {field.required ? <span className="text-red-500"> *</span> : ""}
+          </FormLabel>
+          {!parentValue ? (
+            <p className="text-sm text-muted-foreground">
+              Select the parent field first to see available options.
+            </p>
+          ) : (
+            <FormControl>
+              <RadioGroup
+                value={String(formField.value ?? "")}
+                onValueChange={formField.onChange}
+                className="gap-3"
+              >
+                {options.map((option) => (
+                  <div key={option} className="flex items-center gap-2">
+                    <RadioGroupItem value={option} id={`${field.id}-${option}`} />
+                    <Label htmlFor={`${field.id}-${option}`} className="font-normal">
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </FormControl>
+          )}
+          {field.helpText ? <FormDescription>{field.helpText}</FormDescription> : null}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
 export default function DynamicRegistrationForm({
   fields,
   onSubmit,
@@ -53,8 +191,30 @@ export default function DynamicRegistrationForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
         {fields.map((field) => {
+          if (field.dependsOn && field.fieldType === "SELECT") {
+            return (
+              <DependentSelectField
+                key={field.id}
+                field={field}
+                control={form.control}
+                setValue={form.setValue}
+              />
+            );
+          }
+
+          if (field.dependsOn && field.fieldType === "RADIO") {
+            return (
+              <DependentRadioField
+                key={field.id}
+                field={field}
+                control={form.control}
+                setValue={form.setValue}
+              />
+            );
+          }
+
           const options = normalizeFieldOptions(field.options);
           const isMultiCheckbox = isMultiValueField(field);
           const isSingleCheckbox =
@@ -162,7 +322,9 @@ export default function DynamicRegistrationForm({
                       <FormControl>
                         <Checkbox
                           checked={Boolean(formField.value)}
-                          onCheckedChange={(checked) => formField.onChange(checked === true)}
+                          onCheckedChange={(checked) =>
+                            formField.onChange(checked === true)
+                          }
                         />
                       </FormControl>
                       <FormLabel>{field.placeholder || "Yes"}</FormLabel>

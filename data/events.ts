@@ -5,7 +5,7 @@ import { DEFAULT_EVENT_FORM_FIELDS, normalizeFieldOptions, slugifyFieldKey } fro
 import { slugify } from "@/lib/utils";
 import { toEventUI, type EventUI } from "@/validators/types/event";
 import type { EventFormValues } from "@/validators/schemas/event";
-import type { EventStatus } from "@prisma/client";
+import { Prisma, type EventStatus } from "@prisma/client";
 
 const eventInclude = {
   registrations: {
@@ -31,9 +31,14 @@ function mapFormFields(formFields: EventFormValues["formFields"]) {
     placeholder: field.placeholder.trim() || null,
     helpText: field.helpText.trim() || null,
     required: field.required,
-    options: fieldHasOptions(field.fieldType)
+    options: fieldHasOptions(field.fieldType) && !field.dependsOn
       ? normalizeFieldOptions(field.options)
       : [],
+    dependsOn: field.dependsOn?.trim() || null,
+    conditionalOptions:
+      field.dependsOn?.trim() && field.conditionalOptions
+        ? field.conditionalOptions
+        : Prisma.DbNull,
     sortOrder: index,
   }));
 }

@@ -86,6 +86,8 @@ model EventFormField {
   helpText    String?
   required    Boolean       @default(true)
   options     Json?
+  dependsOn          String?
+  conditionalOptions Json?
   sortOrder   Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt

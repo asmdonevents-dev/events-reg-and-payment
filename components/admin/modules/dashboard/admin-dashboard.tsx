@@ -246,14 +246,15 @@ function RegistrationDistributionChart({
       </CardHeader>
 
       <CardContent className="flex-1 pb-0">
-        <div className="flex flex-col items-center lg:flex-row">
-          {isEmpty ? (
-            <EmptyContentComponent
-              icon={<Users className="h-12 w-12" />}
-              label="No registrations yet"
-              description="Activity will appear here once participants start registering for events."
-            />
-          ) : (
+        {isEmpty ? (
+          <EmptyContentComponent
+            icon={<Users className="h-12 w-12" />}
+            label="No registrations yet"
+            description="Activity will appear here once participants start registering for events."
+            className="w-full"
+          />
+        ) : (
+          <div className="flex flex-col items-center lg:flex-row">
             <>
               <ChartContainer
                 config={chartConfig}
@@ -363,8 +364,8 @@ function RegistrationDistributionChart({
                 })}
               </div>
             </>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
 
       {!isEmpty && topSegment && (

@@ -43,7 +43,7 @@ export default function AssignmentGroupBuilder() {
         fields.map((field, index) => (
           <div key={field.id} className="flex flex-col gap-3 rounded-lg border p-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Group {index + 1}</p>
+              <h3 className="text-base text-primary">Group {index + 1}</h3>
               <div className="flex items-center gap-1">
                 <Button
                   type="button"

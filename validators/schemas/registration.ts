@@ -60,7 +60,7 @@ function buildFieldValidator(field: FormFieldUI) {
     if (field.required) {
       schema = schema.min(1, `${label} is required`);
     }
-    if (options.length > 0) {
+    if (!field.dependsOn && options.length > 0) {
       schema = schema.refine(
         (value) => value === "" || options.includes(value),
         `Select a valid option for ${label}`
@@ -83,7 +83,31 @@ export function buildDynamicRegistrationSchema(fields: FormFieldUI[]) {
     shape[field.fieldKey] = buildFieldValidator(field);
   }
 
-  return z.object(shape) as z.ZodType<DynamicRegistrationValues>;
+  return z
+    .object(shape)
+    .superRefine((values, ctx) => {
+      for (const field of fields) {
+        if (!field.dependsOn || !field.conditionalOptions) continue;
+
+        const parentValue = values[field.dependsOn];
+        if (typeof parentValue !== "string" || !parentValue.trim()) continue;
+
+        const allowed = normalizeFieldOptions(
+          field.conditionalOptions[parentValue] ?? []
+        );
+        const childValue = values[field.fieldKey];
+
+        if (typeof childValue !== "string" || !childValue.trim()) continue;
+
+        if (!allowed.includes(childValue)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Select a valid option for ${field.label}`,
+            path: [field.fieldKey],
+          });
+        }
+      }
+    }) as z.ZodType<DynamicRegistrationValues>;
 }
 
 export function buildDynamicRegistrationDefaults(fields: FormFieldUI[]) {

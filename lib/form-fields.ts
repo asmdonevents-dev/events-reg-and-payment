@@ -22,6 +22,8 @@ export const DEFAULT_EVENT_FORM_FIELDS: FormFieldFormValues[] = [
     helpText: "",
     required: true,
     options: [],
+    dependsOn: null,
+    conditionalOptions: null,
     sortOrder: 0,
   },
   {
@@ -32,6 +34,8 @@ export const DEFAULT_EVENT_FORM_FIELDS: FormFieldFormValues[] = [
     helpText: "",
     required: true,
     options: [],
+    dependsOn: null,
+    conditionalOptions: null,
     sortOrder: 1,
   },
   {
@@ -42,6 +46,8 @@ export const DEFAULT_EVENT_FORM_FIELDS: FormFieldFormValues[] = [
     helpText: "",
     required: true,
     options: [],
+    dependsOn: null,
+    conditionalOptions: null,
     sortOrder: 2,
   },
 ];

@@ -127,6 +127,8 @@ export default function ManageEventForm({
           helpText: field.helpText ?? "",
           required: field.required,
           options: field.options,
+          dependsOn: field.dependsOn,
+          conditionalOptions: field.conditionalOptions,
           sortOrder: field.sortOrder,
         })) ?? DEFAULT_EVENT_FORM_FIELDS,
       speakers:
