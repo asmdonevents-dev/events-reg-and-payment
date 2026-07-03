@@ -6,6 +6,7 @@ import PublicLayoutShell from "@/components/pages/layout/shell";
 import BackButton from "@/components/custom/back-button";
 import { ImagePreview } from "@/components/custom/image-preview";
 import EventShareButtons from "@/components/pages/Events/EventShareButtons";
+import EventQrCodeDownload from "@/components/pages/Events/EventQrCodeDownload";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,59 +65,66 @@ export default function EventDetailPage({ slug }: { slug: string }) {
         ) : null}
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-3xl font-semibold">{event.title}</h1>
-              <Badge>
-                {event.isFree ? "Free" : formatCurrency(event.ticketPrice ?? 0)}
-              </Badge>
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-3xl font-semibold">{event.title}</h1>
+                <Badge>
+                  {event.isFree
+                    ? "Free"
+                    : formatCurrency(event.ticketPrice ?? 0)}
+                </Badge>
+              </div>
+
+              <div className="flex flex-col gap-2 text-muted-foreground">
+                <span className="inline-flex items-center gap-2">
+                  <Calendar className="size-4 shrink-0" />
+                  {formatDate(event.startDate)} - {formatDate(event.endDate)}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <MapPin className="size-4 shrink-0" />
+                  {event.venue}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Users className="size-4 shrink-0" />
+                  {event.remainingSeats} of {event.capacity} seats remaining
+                </span>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2 text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <Calendar className="size-4 shrink-0" />
-                {formatDate(event.startDate)} - {formatDate(event.endDate)}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <MapPin className="size-4 shrink-0" />
-                {event.venue}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Users className="size-4 shrink-0" />
-                {event.remainingSeats} of {event.capacity} seats remaining
-              </span>
-            </div>
+            <Card className="relative overflow-hidden shadow-xs bg-card/60 backdrop-blur-xs h-full">
+              <span
+                className="pointer-events-none absolute left-0 top-1/2 h-3/4 w-1 -translate-y-1/2 rounded-r-full bg-primary"
+                aria-hidden
+              />
+              <CardHeader className="border-b border-border/50 bg-muted/20 pb-3 pl-5">
+                <div className="flex items-center gap-2 text-asm-terracotta">
+                  <BookOpen className="size-5" />
+                  <CardTitle className="text-lg font-semibold">
+                    About this Event
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="py-6 pl-5">
+                <div
+                  className="prose max-w-none whitespace-pre-wrap text-sm leading-relaxed text-foreground/90"
+                  dangerouslySetInnerHTML={{
+                    __html: event.description.replace(/\n/g, "<br />"),
+                  }}
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="w-full lg:max-w-xs">
+          <div className="flex w-full shrink-0 flex-col gap-4 lg:max-w-xs">
             <EventShareButtons
               url={shareUrl}
               title={event.title}
               description={event.description}
             />
+            <EventQrCodeDownload url={shareUrl} title={event.title} />
           </div>
         </div>
-
-        <Card className="relative overflow-hidden shadow-xs bg-card/60 backdrop-blur-xs">
-          <span
-            className="pointer-events-none absolute left-0 top-1/2 h-3/4 w-1 -translate-y-1/2 rounded-r-full bg-primary"
-            aria-hidden
-          />
-          <CardHeader className="border-b border-border/50 bg-muted/20 pb-3 pl-5">
-            <div className="flex items-center gap-2 text-asm-terracotta">
-              <BookOpen className="size-5" />
-              <CardTitle className="text-lg font-semibold">About this Event</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="py-6 pl-5">
-            <div
-              className="prose max-w-none whitespace-pre-wrap text-sm leading-relaxed text-foreground/90"
-              dangerouslySetInnerHTML={{
-                __html: event.description.replace(/\n/g, "<br />"),
-              }}
-            />
-          </CardContent>
-        </Card>
 
         {hasSpeakers ? (
           <section className="flex flex-col gap-4">
