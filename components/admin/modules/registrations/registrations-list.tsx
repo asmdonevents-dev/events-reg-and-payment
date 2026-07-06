@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Download, Eye, Trash2 } from "lucide-react";
+import { Download, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import PageBreadcrumb from "@/components/admin/header/pagebreadcrumb";
 import PageHeader from "@/components/admin/header/pageHeader";
@@ -27,6 +27,8 @@ import { formatResponseValue } from "@/lib/form-fields";
 import { formatCurrency } from "@/lib/utils";
 import type { RegistrationUI } from "@/validators/types/event";
 
+import UpdateRegistrationDialog from "@/components/admin/modules/registrations/update-registration-dialog";
+
 const DownloadNameTagButton = dynamic(
   () =>
     import("@/components/pages/Events/DownloadConfirmationPdf").then(
@@ -45,7 +47,7 @@ const DownloadNameTagButton = dynamic(
 const PAGE_SIZE = 8;
 
 function canPrintTag(registration: RegistrationUI) {
-  return registration.status === "CONFIRMED";
+  return registration.status === "CONFIRMED" || registration.status === "ATTENDED";
 }
 
 function matchesSearch(registration: RegistrationUI, query: string) {
@@ -77,6 +79,7 @@ export default function RegistrationsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedRegistration, setSelectedRegistration] =
     useState<RegistrationUI | null>(null);
+  const [editTarget, setEditTarget] = useState<RegistrationUI | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RegistrationUI | null>(null);
 
   const selectedEvent = events.find((event) => event.id === eventId);
@@ -264,6 +267,7 @@ export default function RegistrationsList() {
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                <SelectItem value="ATTENDED">Attended</SelectItem>
                 <SelectItem value="FAILED">Failed</SelectItem>
               </SelectContent>
             </Select>
@@ -338,6 +342,16 @@ export default function RegistrationsList() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 border-t pt-3 lg:flex lg:shrink-0 lg:items-center lg:border-t-0 lg:pt-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditTarget(registration)}
+                      className="w-full lg:w-auto"
+                    >
+                      <Pencil className="size-4" data-icon="inline-start" />
+                      Update
+                    </Button>
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -435,6 +449,14 @@ export default function RegistrationsList() {
               ))}
             </div>
             <div className="flex flex-wrap gap-2 border-t pt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditTarget(selectedRegistration)}
+              >
+                <Pencil className="size-4" data-icon="inline-start" />
+                Update status
+              </Button>
               {canPrintTag(selectedRegistration) ? (
                 <DownloadNameTagButton
                   registration={selectedRegistration}
@@ -454,6 +476,19 @@ export default function RegistrationsList() {
           </div>
         ) : null}
       </ScrollableDialogModal>
+
+      <UpdateRegistrationDialog
+        registration={editTarget}
+        open={Boolean(editTarget)}
+        onOpenChange={(open) => {
+          if (!open) setEditTarget(null);
+        }}
+        onUpdated={(updated) => {
+          if (selectedRegistration?.id === updated.id) {
+            setSelectedRegistration(updated);
+          }
+        }}
+      />
 
       <DialogModal
         open={Boolean(deleteTarget)}

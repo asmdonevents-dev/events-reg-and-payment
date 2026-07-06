@@ -308,6 +308,31 @@ export async function deleteRegistration(id: string) {
   }
 }
 
+export async function adminUpdateRegistrationStatus(
+  id: string,
+  data: {
+    status: RegistrationStatus;
+    paymentStatus: PaymentStatus;
+    paymentRef?: string;
+  }
+) {
+  try {
+    const session = await getAdminSession();
+    if (!session) {
+      return { success: false as const, error: "Unauthorized" };
+    }
+
+    return updateRegistrationStatus(id, {
+      status: data.status,
+      paymentStatus: data.paymentStatus,
+      paymentRef: data.paymentRef?.trim() || undefined,
+    });
+  } catch (error) {
+    console.error("adminUpdateRegistrationStatus", error);
+    return { success: false as const, error: "Failed to update registration" };
+  }
+}
+
 export async function getRegistrationWithEvent(id: string) {
   return prisma.eventRegistration.findUnique({
     where: { id },

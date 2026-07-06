@@ -4,11 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import {
   createRegistration,
   deleteRegistration,
+  adminUpdateRegistrationStatus,
   getRegistrationById,
   getRegistrations,
   type CreateRegistrationInput,
 } from "@/data/registrations";
 import type { PaymentStatus, RegistrationStatus } from "@prisma/client";
+import type { AdminUpdateRegistrationValues } from "@/validators/schemas/registration-admin";
 
 export const REGISTRATION_KEYS = {
   all: ["registrations"] as const,
@@ -46,4 +48,15 @@ export function useDeleteRegistration() {
   return useMutation((id: string) => deleteRegistration(id), {
     onSuccess: () => queryClient.invalidateQueries(REGISTRATION_KEYS.all),
   });
+}
+
+export function useUpdateRegistrationStatus() {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ id, data }: { id: string; data: AdminUpdateRegistrationValues }) =>
+      adminUpdateRegistrationStatus(id, data),
+    {
+      onSuccess: () => queryClient.invalidateQueries(REGISTRATION_KEYS.all),
+    }
+  );
 }
