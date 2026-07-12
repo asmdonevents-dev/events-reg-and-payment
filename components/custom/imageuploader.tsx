@@ -1,10 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ImageIcon, Loader2, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { ButtonSpinner } from "@/components/custom/spinner";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -15,6 +23,9 @@ interface ImageUploaderProps {
   label?: string;
   folder?: string;
   className?: string;
+  helperText?: string;
+  allowCamera?: boolean;
+  showUrlInput?: boolean;
 }
 
 export default function ImageUploader({
@@ -23,9 +34,17 @@ export default function ImageUploader({
   label = "Banner image",
   folder = "asm-events",
   className,
+  helperText,
+  allowCamera = false,
+  showUrlInput = true,
 }: ImageUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   async function uploadFile(file: File) {
     setIsUploading(true);
@@ -53,8 +72,8 @@ export default function ImageUploader({
       toast.error(message);
     } finally {
       setIsUploading(false);
-      if (inputRef.current) {
-        inputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
     }
   }
@@ -66,10 +85,99 @@ export default function ImageUploader({
     }
   }
 
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setIsCameraReady(false);
+  }
+
+  async function startCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("Camera is not supported in this browser");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "user" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+
+      setIsCameraReady(true);
+    } catch {
+      stopCamera();
+      toast.error("Could not access the camera. Check browser permissions.");
+      setCameraOpen(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!cameraOpen) {
+      stopCamera();
+      return;
+    }
+
+    void startCamera();
+
+    return () => {
+      stopCamera();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraOpen]);
+
+  async function capturePhoto() {
+    const video = videoRef.current;
+    if (!video || !isCameraReady) return;
+
+    setIsCapturing(true);
+
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+
+      const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("Could not capture photo");
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, "image/jpeg", 0.92);
+      });
+
+      if (!blob) {
+        throw new Error("Could not capture photo");
+      }
+
+      const file = new File([blob], `camera-${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+
+      setCameraOpen(false);
+      await uploadFile(file);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not capture photo";
+      toast.error(message);
+    } finally {
+      setIsCapturing(false);
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <Label>{label}</Label>
-
       <div
         className={cn(
           "relative flex min-h-40 flex-col items-center justify-center gap-3 rounded-lg border border-dashed p-4 text-center",
@@ -91,7 +199,9 @@ export default function ImageUploader({
               <ImageIcon className="size-8 opacity-60" />
             )}
             <p className="text-sm">
-              {isUploading ? "Uploading to Cloudinary..." : "Upload an image for this event"}
+              {isUploading
+                ? "Uploading..."
+                : helperText ?? "Upload an image for this event"}
             </p>
           </div>
         )}
@@ -101,8 +211,8 @@ export default function ImageUploader({
             type="button"
             variant="outline"
             size="sm"
-            disabled={isUploading}
-            onClick={() => inputRef.current?.click()}
+            disabled={isUploading || isCapturing}
+            onClick={() => fileInputRef.current?.click()}
           >
             {isUploading ? (
               <ButtonSpinner label="Uploading..." />
@@ -114,12 +224,25 @@ export default function ImageUploader({
             )}
           </Button>
 
+          {allowCamera ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isUploading || isCapturing}
+              onClick={() => setCameraOpen(true)}
+            >
+              <Camera className="size-4" data-icon="inline-start" />
+              Take a photo
+            </Button>
+          ) : null}
+
           {value ? (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              disabled={isUploading}
+              disabled={isUploading || isCapturing}
               onClick={() => onChange("")}
             >
               <X className="size-4" data-icon="inline-start" />
@@ -129,7 +252,7 @@ export default function ImageUploader({
         </div>
 
         <input
-          ref={inputRef}
+          ref={fileInputRef}
           type="file"
           accept="image/*"
           className="hidden"
@@ -137,18 +260,64 @@ export default function ImageUploader({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${label}-url`} className="text-xs text-muted-foreground">
-          Or paste an image URL
-        </Label>
-        <Input
-          id={`${label}-url`}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="https://..."
-          disabled={isUploading}
-        />
-      </div>
+      {showUrlInput ? (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`${label}-url`} className="text-xs text-muted-foreground">
+            Or paste an image URL
+          </Label>
+          <Input
+            id={`${label}-url`}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder="https://..."
+            disabled={isUploading}
+          />
+        </div>
+      ) : null}
+
+      <Dialog
+        open={cameraOpen}
+        onOpenChange={(open) => {
+          if (!isCapturing) setCameraOpen(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Take a photo</DialogTitle>
+            <DialogDescription>
+              Position yourself in the frame, then capture the photo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="overflow-hidden rounded-lg border bg-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="aspect-[4/3] w-full object-cover"
+            />
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isCapturing}
+              onClick={() => setCameraOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!isCameraReady || isCapturing}
+              onClick={() => void capturePhoto()}
+            >
+              {isCapturing ? "Saving..." : "Capture photo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

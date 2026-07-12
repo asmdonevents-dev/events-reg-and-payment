@@ -39,6 +39,20 @@ function buildFieldValidator(field: FormFieldUI) {
       : schema;
   }
 
+  if (field.fieldType === "IMAGE") {
+    let schema = z.string().refine(
+      (value) => value === "" || /^https?:\/\/.+/i.test(value),
+      `Upload a valid photo for ${label.toLowerCase()}`
+    );
+    if (field.required) {
+      schema = schema.refine(
+        (value) => value.trim() !== "",
+        `${label} is required`
+      );
+    }
+    return schema;
+  }
+
   if (isMultiValueField(field)) {
     let schema = z.array(z.string());
     if (field.required) {

@@ -59,8 +59,8 @@ export default function EventConfirmationPage({
                     Registration confirmed
                   </h1>
                   <p className="max-w-sm text-sm text-muted-foreground">
-                    Download your name tag, print it, cut along the guide, and
-                    wear it on a lanyard at the conference.
+                    Download your A6 name tag (105mm × 148mm), print it, punch a
+                    hole at the top, and wear it on a lanyard at the conference.
                   </p>
                 </div>
               ) : isFailed ? (

@@ -11,6 +11,7 @@ export const FORM_FIELD_TYPE_LABELS: Record<FormFieldType, string> = {
   RADIO: "Radio group",
   CHECKBOX: "Checkboxes",
   DATE: "Date",
+  IMAGE: "Photo upload",
 };
 
 export const DEFAULT_EVENT_FORM_FIELDS: FormFieldFormValues[] = [
@@ -104,10 +105,17 @@ export function extractContactFromResponses(
   return { contactEmail, contactName, contactPhone };
 }
 
-export function formatResponseValue(value: unknown): string {
+export function formatResponseValue(value: unknown, fieldType?: FormFieldType): string {
   if (Array.isArray(value)) return value.join(", ");
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (value === null || value === undefined) return "";
+  if (
+    fieldType === "IMAGE" &&
+    typeof value === "string" &&
+    /^https?:\/\/.+/i.test(value)
+  ) {
+    return "Photo provided";
+  }
   return String(value);
 }
 
@@ -122,5 +130,5 @@ export function getResponsePreview(
 
   if (!primaryField) return "Registration";
 
-  return formatResponseValue(responses[primaryField.fieldKey]) || "Registration";
+  return formatResponseValue(responses[primaryField.fieldKey], primaryField.fieldType) || "Registration";
 }

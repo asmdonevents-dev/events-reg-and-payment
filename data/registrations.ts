@@ -29,6 +29,10 @@ const registrationInclude = {
       slug: true,
       venue: true,
       startDate: true,
+      endDate: true,
+      tagPrimaryColor: true,
+      tagSecondaryColor: true,
+      tagFooterText: true,
       formFields: {
         orderBy: { sortOrder: "asc" as const },
       },

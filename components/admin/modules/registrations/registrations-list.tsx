@@ -143,7 +143,8 @@ export default function RegistrationsList() {
 
       for (const field of fieldDefinitions) {
         baseRow[field.label] = formatResponseValue(
-          registration.responses[field.fieldKey]
+          registration.responses[field.fieldKey],
+          field.fieldType
         );
       }
 

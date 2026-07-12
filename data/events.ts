@@ -60,6 +60,9 @@ function mapEventInput(data: EventFormValues) {
     isFree: data.isFree,
     ticketPrice: data.isFree ? null : data.ticketPrice,
     status: data.status,
+    tagPrimaryColor: data.tagPrimaryColor,
+    tagSecondaryColor: data.tagSecondaryColor,
+    tagFooterText: data.tagFooterText.trim() || null,
   };
 }
 

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import ImageUploader from "@/components/custom/imageuploader";
 import { isMultiValueField, normalizeFieldOptions } from "@/lib/form-fields";
 import {
   buildDynamicRegistrationDefaults,
@@ -365,6 +366,24 @@ export default function DynamicRegistrationForm({
                         type="date"
                         value={String(formField.value ?? "")}
                         onChange={formField.onChange}
+                      />
+                    </FormControl>
+                  ) : null}
+
+                  {field.fieldType === "IMAGE" ? (
+                    <FormControl>
+                      <ImageUploader
+                        value={String(formField.value ?? "")}
+                        onChange={formField.onChange}
+                        label={field.label}
+                        folder="asm-registrations/photos"
+                        allowCamera
+                        showUrlInput={false}
+                        helperText={
+                          field.required
+                            ? "Upload a photo or take one with your camera"
+                            : "Optional — upload a photo or take one with your camera"
+                        }
                       />
                     </FormControl>
                   ) : null}

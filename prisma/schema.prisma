@@ -40,6 +40,7 @@ enum FormFieldType {
   RADIO
   CHECKBOX
   DATE
+  IMAGE
 }
 
 model Admin {
@@ -68,6 +69,9 @@ model Event {
   isFree        Boolean             @default(false)
   ticketPrice   Decimal?            @db.Decimal(10, 2)
   status        EventStatus         @default(DRAFT)
+  tagPrimaryColor   String          @default("#4a3428")
+  tagSecondaryColor String          @default("#f5f0e8")
+  tagFooterText     String?
   formFields        EventFormField[]
   speakers          EventSpeaker[]
   assignmentGroups  EventAssignmentGroup[]

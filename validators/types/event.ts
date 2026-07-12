@@ -1,5 +1,6 @@
 import type { Event, EventAssignmentGroup, EventFormField, EventRegistration, EventSpeaker } from "@prisma/client";
 import { formatResponseValue, getResponsePreview } from "@/lib/form-fields";
+import { getPhotoUrlFromResponses } from "@/lib/name-tag";
 import { toFormFieldUI, type FormFieldUI } from "@/validators/types/form-field";
 import { toEventSpeakerUI, type EventSpeakerUI } from "@/validators/types/speaker";
 
@@ -35,6 +36,9 @@ export interface EventUI {
   formFields: FormFieldUI[];
   speakers: EventSpeakerUI[];
   assignmentGroups: AssignmentGroupUI[];
+  tagPrimaryColor: string;
+  tagSecondaryColor: string;
+  tagFooterText: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +50,11 @@ export interface RegistrationUI {
   eventSlug: string;
   eventVenue: string;
   eventStartDate: string;
+  eventEndDate: string;
+  tagPrimaryColor: string;
+  tagSecondaryColor: string;
+  tagFooterText: string | null;
+  photoUrl: string | null;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
@@ -102,6 +111,9 @@ export function toEventUI(event: EventWithCounts): EventUI {
     formFields,
     speakers,
     assignmentGroups,
+    tagPrimaryColor: event.tagPrimaryColor,
+    tagSecondaryColor: event.tagSecondaryColor,
+    tagFooterText: event.tagFooterText,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   };
@@ -109,7 +121,17 @@ export function toEventUI(event: EventWithCounts): EventUI {
 
 export function toRegistrationUI(
   registration: EventRegistration & {
-    event: Pick<Event, "title" | "slug" | "venue" | "startDate"> & {
+    event: Pick<
+      Event,
+      | "title"
+      | "slug"
+      | "venue"
+      | "startDate"
+      | "endDate"
+      | "tagPrimaryColor"
+      | "tagSecondaryColor"
+      | "tagFooterText"
+    > & {
       formFields?: EventFormField[];
     };
     assignmentGroup?: { name: string } | null;
@@ -131,13 +153,18 @@ export function toRegistrationUI(
     eventSlug: registration.event.slug,
     eventVenue: registration.event.venue,
     eventStartDate: registration.event.startDate.toISOString(),
+    eventEndDate: registration.event.endDate.toISOString(),
+    tagPrimaryColor: registration.event.tagPrimaryColor,
+    tagSecondaryColor: registration.event.tagSecondaryColor,
+    tagFooterText: registration.event.tagFooterText,
+    photoUrl: getPhotoUrlFromResponses(formFields, responses),
     contactName: registration.contactName ?? "",
     contactEmail: registration.contactEmail ?? "",
     contactPhone: registration.contactPhone ?? "",
     responses,
     labeledResponses: formFields.map((field) => ({
       label: field.label,
-      value: formatResponseValue(responses[field.fieldKey]),
+      value: formatResponseValue(responses[field.fieldKey], field.fieldType),
     })),
     responsePreview: getResponsePreview(formFields, responses),
     assignedGroup: registration.assignmentGroup?.name ?? null,

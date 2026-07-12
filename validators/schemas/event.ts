@@ -19,6 +19,9 @@ export type EventFormValues = {
   capacity: number;
   isFree: boolean;
   ticketPrice: number;
+  tagPrimaryColor: string;
+  tagSecondaryColor: string;
+  tagFooterText: string;
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   formFields: FormFieldFormValues[];
   speakers: EventSpeakerFormValues[];
@@ -38,6 +41,13 @@ export const EventSchema = z
     isFree: z.boolean(),
     ticketPrice: z.number().min(0),
     status: EventStatusEnum,
+    tagPrimaryColor: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/, "Enter a valid hex color"),
+    tagSecondaryColor: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/, "Enter a valid hex color"),
+    tagFooterText: z.string(),
     formFields: FormFieldsSchema,
     speakers: EventSpeakersSchema,
     assignmentGroups: EventAssignmentGroupsSchema,

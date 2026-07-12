@@ -35,6 +35,10 @@ import SpeakerBuilder from "@/components/admin/modules/events/speaker-builder";
 import { useCreateEvent, useUpdateEvent } from "@/hooks/use-events";
 import { DEFAULT_EVENT_FORM_FIELDS } from "@/lib/form-fields";
 import {
+  DEFAULT_TAG_PRIMARY_COLOR,
+  DEFAULT_TAG_SECONDARY_COLOR,
+} from "@/lib/name-tag";
+import {
   fromDateTimeLocalValue,
   toDateTimeLocalValue,
 } from "@/lib/datetime-local";
@@ -73,7 +77,7 @@ const FORM_STEPS: ReadonlyArray<{
   {
     id: "registration",
     label: "Registration",
-    fields: ["isFree", "ticketPrice", "formFields"],
+    fields: ["isFree", "ticketPrice", "tagPrimaryColor", "tagSecondaryColor", "tagFooterText", "formFields"],
   },
   {
     id: "speakers",
@@ -117,6 +121,9 @@ export default function ManageEventForm({
       isFree: event?.isFree ?? false,
       ticketPrice: event?.ticketPrice ?? 0,
       status: event?.status ?? "DRAFT",
+      tagPrimaryColor: event?.tagPrimaryColor ?? DEFAULT_TAG_PRIMARY_COLOR,
+      tagSecondaryColor: event?.tagSecondaryColor ?? DEFAULT_TAG_SECONDARY_COLOR,
+      tagFooterText: event?.tagFooterText ?? "",
       formFields:
         event?.formFields.map((field) => ({
           id: field.id,
@@ -530,6 +537,75 @@ export default function ManageEventForm({
                 )}
               />
             ) : null}
+
+            <div className="rounded-xl border p-4">
+              <div className="mb-4">
+                <h3 className="text-base text-primary">Name tag theme</h3>
+                <p className="text-sm text-muted-foreground">
+                  Customize the colors and footer text used on printable registration tags.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="tagPrimaryColor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Primary color</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            type="color"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="h-10 w-16 cursor-pointer p-1"
+                          />
+                          <Input {...field} placeholder="#4a3428" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tagSecondaryColor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Secondary color</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-3">
+                          <Input
+                            type="color"
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="h-10 w-16 cursor-pointer p-1"
+                          />
+                          <Input {...field} placeholder="#f5f0e8" />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="tagFooterText"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>Tag footer text</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="e.g. ANGLICAN CHURCH OF THE GOOD SHEPHERD AWADA"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormFieldBuilder />
 

@@ -27,7 +27,7 @@ export function DownloadConfirmationPdf({
 
   useEffect(() => {
     QRCode.toDataURL(registration.id, {
-      width: 160,
+      width: 220,
       margin: 1,
       color: { dark: "#111111", light: "#ffffff" },
     }).then(setQrDataUrl);
