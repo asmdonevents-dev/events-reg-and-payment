@@ -21,8 +21,9 @@ import type { RegistrationUI } from "@/validators/types/event";
 registerPdfFonts();
 
 const SIDEBAR_WIDTH = mmToPt(7);
+const HEADER_HEIGHT = mmToPt(18);
 const BODY_HEIGHT =
-  TAG_HEIGHT_PT - mmToPt(7) - mmToPt(16) - mmToPt(11);
+  TAG_HEIGHT_PT - mmToPt(7) - HEADER_HEIGHT - mmToPt(11);
 
 function createStyles(primary: string, secondary: string) {
   return StyleSheet.create({
@@ -55,20 +56,20 @@ function createStyles(primary: string, secondary: string) {
     },
     header: {
       paddingHorizontal: mmToPt(3),
-      paddingVertical: mmToPt(3),
+      paddingVertical: mmToPt(3.5),
       alignItems: "center",
       justifyContent: "center",
       backgroundColor: primary,
-      minHeight: mmToPt(16),
+      minHeight: HEADER_HEIGHT,
     },
     headerText: {
-      fontSize: mmToPt(3),
+      fontSize: mmToPt(3.8),
       fontFamily: PDF_FONT_FAMILY,
       fontWeight: 800,
       color: "#ffffff",
       textAlign: "center",
       textTransform: "uppercase",
-      lineHeight: 1.2,
+      lineHeight: 1.15,
     },
     bodyRow: {
       height: BODY_HEIGHT,
@@ -101,12 +102,12 @@ function createStyles(primary: string, secondary: string) {
     },
     topRow: {
       flexDirection: "row",
-      gap: mmToPt(2.5),
-      marginBottom: mmToPt(2.5),
+      gap: mmToPt(2),
+      marginBottom: mmToPt(2),
     },
     photoFrame: {
-      width: mmToPt(24),
-      height: mmToPt(28),
+      width: mmToPt(22),
+      height: mmToPt(26),
       borderWidth: 1.5,
       borderColor: primary,
       backgroundColor: "#ffffff",
@@ -115,8 +116,8 @@ function createStyles(primary: string, secondary: string) {
       overflow: "hidden",
     },
     photo: {
-      width: mmToPt(24),
-      height: mmToPt(28),
+      width: mmToPt(22),
+      height: mmToPt(26),
       objectFit: "cover",
     },
     photoPlaceholder: {
@@ -132,8 +133,8 @@ function createStyles(primary: string, secondary: string) {
       alignItems: "center",
     },
     qr: {
-      width: mmToPt(28),
-      height: mmToPt(28),
+      width: mmToPt(26),
+      height: mmToPt(26),
     },
     dateText: {
       marginTop: mmToPt(1.5),
@@ -156,20 +157,39 @@ function createStyles(primary: string, secondary: string) {
     detailBox: {
       borderWidth: 1,
       borderColor: primary,
-      paddingHorizontal: mmToPt(2),
-      paddingVertical: mmToPt(1.5),
-      marginBottom: mmToPt(1.5),
-      minHeight: mmToPt(8),
+      paddingHorizontal: mmToPt(1.5),
+      paddingVertical: mmToPt(1),
+      marginBottom: mmToPt(1),
+      minHeight: mmToPt(6.5),
+      justifyContent: "center",
+      backgroundColor: "#ffffff",
+    },
+    detailNameBox: {
+      borderWidth: 1,
+      borderColor: primary,
+      paddingHorizontal: mmToPt(1.5),
+      paddingVertical: mmToPt(1.25),
+      marginBottom: mmToPt(1),
+      minHeight: mmToPt(7.5),
       justifyContent: "center",
       backgroundColor: "#ffffff",
     },
     detailText: {
-      fontSize: mmToPt(2.3),
+      fontSize: mmToPt(2),
       fontFamily: PDF_FONT_FAMILY,
       fontWeight: 600,
       color: primary,
       textTransform: "uppercase",
-      lineHeight: 1.25,
+      lineHeight: 1.2,
+      textAlign: "center",
+    },
+    detailNameText: {
+      fontSize: mmToPt(2.5),
+      fontFamily: PDF_FONT_FAMILY,
+      fontWeight: 700,
+      color: primary,
+      textTransform: "uppercase",
+      lineHeight: 1.15,
       textAlign: "center",
     },
     footer: {
@@ -218,7 +238,7 @@ export function RegistrationConfirmationDocument({
 }) {
   const theme = resolveTagTheme(registration);
   const styles = createStyles(theme.primary, theme.secondary);
-  const detailLines = getTagDetailLines(registration, 3);
+  const detailLines = getTagDetailLines(registration, 6);
   const dateRange = formatTagDateRange(
     registration.eventStartDate,
     registration.eventEndDate
@@ -260,8 +280,13 @@ export function RegistrationConfirmationDocument({
               </View>
 
               {detailLines.map((line, index) => (
-                <View key={`${line.label}-${index}`} style={styles.detailBox}>
-                  <Text style={styles.detailText}>{renderDetailText(line)}</Text>
+                <View
+                  key={`${line.label}-${index}`}
+                  style={index === 0 ? styles.detailNameBox : styles.detailBox}
+                >
+                  <Text style={index === 0 ? styles.detailNameText : styles.detailText}>
+                    {renderDetailText(line)}
+                  </Text>
                 </View>
               ))}
             </View>

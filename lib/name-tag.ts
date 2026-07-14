@@ -38,7 +38,7 @@ export function getParticipantName(registration: RegistrationUI) {
   );
 }
 
-export function getTagDetailLines(registration: RegistrationUI, limit = 3) {
+export function getTagDetailLines(registration: RegistrationUI, limit = 6) {
   const participantName = getParticipantName(registration).toUpperCase();
 
   const detailLines = registration.labeledResponses
