@@ -7,6 +7,7 @@ import {
   adminUpdateRegistrationStatus,
   getRegistrationById,
   getRegistrations,
+  lookupRegistrationForTagReprint,
   type CreateRegistrationInput,
 } from "@/data/registrations";
 import type { PaymentStatus, RegistrationStatus } from "@prisma/client";
@@ -41,6 +42,10 @@ export function useCreateRegistration() {
   return useMutation((data: CreateRegistrationInput) => createRegistration(data), {
     onSuccess: () => queryClient.invalidateQueries(REGISTRATION_KEYS.all),
   });
+}
+
+export function useLookupRegistrationForReprint() {
+  return useMutation(lookupRegistrationForTagReprint);
 }
 
 export function useDeleteRegistration() {

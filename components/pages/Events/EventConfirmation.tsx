@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRegistration } from "@/hooks/use-registrations";
+import { canPrintRegistrationTag } from "@/lib/name-tag";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const DownloadConfirmationPdf = dynamic(
@@ -41,7 +42,9 @@ export default function EventConfirmationPage({
 }) {
   const { data: registration, isLoading } = useRegistration(registrationId);
 
-  const isSuccess = status !== "failed" && registration?.status === "CONFIRMED";
+  const isSuccess =
+    status !== "failed" &&
+    Boolean(registration && canPrintRegistrationTag(registration));
   const isFailed = status === "failed" || registration?.status === "FAILED";
 
   return (
@@ -137,6 +140,15 @@ export default function EventConfirmationPage({
                   className={cn(buttonVariants(), "inline-flex")}
                 >
                   Back to event
+                </Link>
+                <Link
+                  href={`/events/${slug}/reprint`}
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "inline-flex",
+                  )}
+                >
+                  Reprint tag later
                 </Link>
                 <Link
                   href="/events"

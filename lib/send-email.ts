@@ -44,6 +44,7 @@ export function buildRegistrationConfirmationEmail(params: {
   responses?: Record<string, string | string[] | boolean>;
   formFields?: FormFieldUI[];
   assignedGroup?: string | null;
+  reprintUrl?: string;
 }) {
   const paymentLine = params.isPaid
     ? `<p><strong>Amount paid:</strong> ${params.amount}</p>`
@@ -75,6 +76,11 @@ export function buildRegistrationConfirmationEmail(params: {
       ${responseLines}
       <p><strong>Reference:</strong> ${params.registrationId}</p>
       <p>Please keep this reference for your records.</p>
+      ${
+        params.reprintUrl
+          ? `<p><a href="${params.reprintUrl}">Reprint your name tag</a> if you need another copy.</p>`
+          : ""
+      }
     </div>
   `;
 }

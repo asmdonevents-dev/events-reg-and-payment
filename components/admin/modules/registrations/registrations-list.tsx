@@ -24,6 +24,7 @@ import { useEvents } from "@/hooks/use-events";
 import { useDeleteRegistration, useRegistrations } from "@/hooks/use-registrations";
 import { exportToExcel, formatExportDate } from "@/lib/export-excel";
 import { formatResponseValue } from "@/lib/form-fields";
+import { canPrintRegistrationTag } from "@/lib/name-tag";
 import { formatCurrency } from "@/lib/utils";
 import type { RegistrationUI } from "@/validators/types/event";
 
@@ -47,7 +48,7 @@ const DownloadNameTagButton = dynamic(
 const PAGE_SIZE = 8;
 
 function canPrintTag(registration: RegistrationUI) {
-  return registration.status === "CONFIRMED" || registration.status === "ATTENDED";
+  return canPrintRegistrationTag(registration);
 }
 
 function matchesSearch(registration: RegistrationUI, query: string) {

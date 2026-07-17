@@ -1,5 +1,4 @@
 import moment from "moment";
-import type { FormFieldUI } from "@/validators/types/form-field";
 import type { RegistrationUI } from "@/validators/types/event";
 
 export const DEFAULT_TAG_PRIMARY_COLOR = "#4a3428";
@@ -17,7 +16,7 @@ export function mmToPt(mm: number) {
 }
 
 export function getPhotoUrlFromResponses(
-  fields: FormFieldUI[],
+  fields: Array<{ fieldType: string; fieldKey: string }>,
   responses: Record<string, unknown>
 ) {
   for (const field of fields) {
@@ -38,21 +37,61 @@ export function getParticipantName(registration: RegistrationUI) {
   );
 }
 
+export function canPrintRegistrationTag(registration: RegistrationUI) {
+  if (
+    registration.status !== "CONFIRMED" &&
+    registration.status !== "ATTENDED"
+  ) {
+    return false;
+  }
+
+  return registration.paymentStatus !== "UNPAID";
+}
+
 export function getTagDetailLines(registration: RegistrationUI, limit = 6) {
   const participantName = getParticipantName(registration).toUpperCase();
+  const responseByKey = new Map(
+    registration.labeledResponses.map((entry) => [entry.fieldKey, entry])
+  );
 
-  const detailLines = registration.labeledResponses
-    .filter((entry) => {
-      if (/^(full name|name|email|phone|photo)/i.test(entry.label)) return false;
-      if (entry.value === "Photo provided" || !entry.value.trim()) return false;
-      return true;
-    })
-    .map((entry) => ({
+  const lines = [{ label: "", value: participantName }];
+  const tagFieldKeys = registration.tagFieldKeys;
+
+  if (tagFieldKeys === null) {
+    const detailLines = registration.labeledResponses
+      .filter((entry) => {
+        if (/^(full name|name|email|phone|photo)/i.test(entry.label)) {
+          return false;
+        }
+        if (entry.value === "Photo provided" || !entry.value.trim()) {
+          return false;
+        }
+        return true;
+      })
+      .map((entry) => ({
+        label: entry.label.toUpperCase(),
+        value: entry.value.toUpperCase(),
+      }));
+
+    return [...lines, ...detailLines].slice(0, limit);
+  }
+
+  for (const key of tagFieldKeys) {
+    if (key === "full_name") continue;
+
+    const entry = responseByKey.get(key);
+    if (!entry || entry.value === "Photo provided" || !entry.value.trim()) {
+      continue;
+    }
+
+    lines.push({
       label: entry.label.toUpperCase(),
       value: entry.value.toUpperCase(),
-    }));
+    });
 
-  const lines = [{ label: "", value: participantName }, ...detailLines];
+    if (lines.length >= limit) break;
+  }
+
   return lines.slice(0, limit);
 }
 

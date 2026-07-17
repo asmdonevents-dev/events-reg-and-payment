@@ -72,6 +72,7 @@ model Event {
   tagPrimaryColor   String          @default("#4a3428")
   tagSecondaryColor String          @default("#f5f0e8")
   tagFooterText     String?
+  tagFieldKeys      Json?
   formFields        EventFormField[]
   speakers          EventSpeaker[]
   assignmentGroups  EventAssignmentGroup[]

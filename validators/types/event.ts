@@ -1,6 +1,7 @@
 import type { Event, EventAssignmentGroup, EventFormField, EventRegistration, EventSpeaker } from "@prisma/client";
 import { formatResponseValue, getResponsePreview } from "@/lib/form-fields";
 import { getPhotoUrlFromResponses } from "@/lib/name-tag";
+import { parseTagFieldKeys } from "@/lib/tag-fields";
 import { toFormFieldUI, type FormFieldUI } from "@/validators/types/form-field";
 import { toEventSpeakerUI, type EventSpeakerUI } from "@/validators/types/speaker";
 
@@ -39,6 +40,7 @@ export interface EventUI {
   tagPrimaryColor: string;
   tagSecondaryColor: string;
   tagFooterText: string | null;
+  tagFieldKeys: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,12 +56,13 @@ export interface RegistrationUI {
   tagPrimaryColor: string;
   tagSecondaryColor: string;
   tagFooterText: string | null;
+  tagFieldKeys: string[] | null;
   photoUrl: string | null;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
   responses: Record<string, string | string[] | boolean>;
-  labeledResponses: Array<{ label: string; value: string }>;
+  labeledResponses: Array<{ fieldKey: string; label: string; value: string }>;
   responsePreview: string;
   assignedGroup: string | null;
   status: EventRegistration["status"];
@@ -114,6 +117,7 @@ export function toEventUI(event: EventWithCounts): EventUI {
     tagPrimaryColor: event.tagPrimaryColor,
     tagSecondaryColor: event.tagSecondaryColor,
     tagFooterText: event.tagFooterText,
+    tagFieldKeys: parseTagFieldKeys(event.tagFieldKeys),
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   };
@@ -131,6 +135,7 @@ export function toRegistrationUI(
       | "tagPrimaryColor"
       | "tagSecondaryColor"
       | "tagFooterText"
+      | "tagFieldKeys"
     > & {
       formFields?: EventFormField[];
     };
@@ -157,12 +162,14 @@ export function toRegistrationUI(
     tagPrimaryColor: registration.event.tagPrimaryColor,
     tagSecondaryColor: registration.event.tagSecondaryColor,
     tagFooterText: registration.event.tagFooterText,
+    tagFieldKeys: parseTagFieldKeys(registration.event.tagFieldKeys),
     photoUrl: getPhotoUrlFromResponses(formFields, responses),
     contactName: registration.contactName ?? "",
     contactEmail: registration.contactEmail ?? "",
     contactPhone: registration.contactPhone ?? "",
     responses,
     labeledResponses: formFields.map((field) => ({
+      fieldKey: field.fieldKey,
       label: field.label,
       value: formatResponseValue(responses[field.fieldKey], field.fieldType),
     })),

@@ -33,6 +33,7 @@ const registrationInclude = {
       tagPrimaryColor: true,
       tagSecondaryColor: true,
       tagFooterText: true,
+      tagFieldKeys: true,
       formFields: {
         orderBy: { sortOrder: "asc" as const },
       },
@@ -124,6 +125,63 @@ export async function getRegistrationById(id: string): Promise<RegistrationUI | 
   return registration ? toRegistrationUI(registration) : null;
 }
 
+export async function lookupRegistrationForTagReprint(input: {
+  eventSlug: string;
+  email: string;
+  registrationRef: string;
+}) {
+  try {
+    const email = input.email.trim().toLowerCase();
+    const registrationRef = input.registrationRef.trim();
+
+    if (!email || !registrationRef) {
+      return {
+        success: false as const,
+        error: "Email and registration reference are required",
+      };
+    }
+
+    const registrations = await prisma.eventRegistration.findMany({
+      where: {
+        contactEmail: { equals: email, mode: "insensitive" },
+        event: { slug: input.eventSlug, status: "PUBLISHED" },
+        status: { in: ["CONFIRMED", "ATTENDED"] },
+      },
+      include: registrationInclude,
+    });
+
+    const normalizedRef = registrationRef.toLowerCase();
+    const match = registrations.find(
+      (registration) =>
+        registration.id === normalizedRef ||
+        registration.id.toLowerCase().endsWith(normalizedRef)
+    );
+
+    if (!match) {
+      return {
+        success: false as const,
+        error:
+          "No matching registration found. Check your email and reference.",
+      };
+    }
+
+    if (match.paymentStatus === "UNPAID") {
+      return {
+        success: false as const,
+        error: "Payment must be completed before downloading your tag.",
+      };
+    }
+
+    return { success: true as const, data: toRegistrationUI(match) };
+  } catch (error) {
+    console.error("lookupRegistrationForTagReprint", error);
+    return {
+      success: false as const,
+      error: "Unable to look up your registration. Please try again.",
+    };
+  }
+}
+
 export async function createRegistration(input: CreateRegistrationInput) {
   try {
     const event = await prisma.event.findUnique({
@@ -201,6 +259,7 @@ export async function createRegistration(input: CreateRegistrationInput) {
     });
 
     if (event.isFree) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
       await sendEmail({
         to: registration.contactEmail!,
         subject: `Registration confirmed — ${event.title}`,
@@ -215,6 +274,7 @@ export async function createRegistration(input: CreateRegistrationInput) {
           assignedGroup,
           responses,
           formFields,
+          reprintUrl: `${siteUrl}/events/${event.slug}/reprint`,
         }),
       });
     }
@@ -271,6 +331,7 @@ export async function updateRegistrationStatus(
         string,
         string | string[] | boolean
       >;
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
       await sendEmail({
         to: registration.contactEmail!,
@@ -286,6 +347,7 @@ export async function updateRegistrationStatus(
           assignedGroup: assignedGroup ?? registration.assignmentGroup?.name ?? null,
           responses,
           formFields,
+          reprintUrl: `${siteUrl}/events/${registration.event.slug}/reprint`,
         }),
       });
     }

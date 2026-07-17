@@ -182,6 +182,15 @@ export default function EventDetailPage({ slug }: { slug: string }) {
             </Link>
           )}
           <Link
+            href={`/events/${event.slug}/reprint`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "inline-flex",
+            )}
+          >
+            Reprint your tag
+          </Link>
+          <Link
             href="/events"
             className={cn(
               buttonVariants({ variant: "outline" }),

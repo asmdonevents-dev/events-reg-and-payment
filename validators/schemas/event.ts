@@ -22,6 +22,7 @@ export type EventFormValues = {
   tagPrimaryColor: string;
   tagSecondaryColor: string;
   tagFooterText: string;
+  tagFieldKeys: string[];
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   formFields: FormFieldFormValues[];
   speakers: EventSpeakerFormValues[];
@@ -48,6 +49,7 @@ export const EventSchema = z
       .string()
       .regex(/^#[0-9A-Fa-f]{6}$/, "Enter a valid hex color"),
     tagFooterText: z.string(),
+    tagFieldKeys: z.array(z.string()),
     formFields: FormFieldsSchema,
     speakers: EventSpeakersSchema,
     assignmentGroups: EventAssignmentGroupsSchema,

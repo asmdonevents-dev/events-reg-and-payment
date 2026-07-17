@@ -30,6 +30,9 @@ import ImageUploader from "@/components/custom/imageuploader";
 import NumberInput from "@/components/custom/number-input";
 import { ButtonSpinner } from "@/components/custom/spinner";
 import FormFieldBuilder from "@/components/admin/modules/events/form-field-builder";
+import TagFieldSelector, {
+  getInitialTagFieldKeys,
+} from "@/components/admin/modules/events/tag-field-selector";
 import AssignmentGroupBuilder from "@/components/admin/modules/events/assignment-group-builder";
 import SpeakerBuilder from "@/components/admin/modules/events/speaker-builder";
 import { useCreateEvent, useUpdateEvent } from "@/hooks/use-events";
@@ -77,7 +80,7 @@ const FORM_STEPS: ReadonlyArray<{
   {
     id: "registration",
     label: "Registration",
-    fields: ["isFree", "ticketPrice", "tagPrimaryColor", "tagSecondaryColor", "tagFooterText", "formFields"],
+    fields: ["isFree", "ticketPrice", "tagPrimaryColor", "tagSecondaryColor", "tagFooterText", "tagFieldKeys", "formFields"],
   },
   {
     id: "speakers",
@@ -124,6 +127,22 @@ export default function ManageEventForm({
       tagPrimaryColor: event?.tagPrimaryColor ?? DEFAULT_TAG_PRIMARY_COLOR,
       tagSecondaryColor: event?.tagSecondaryColor ?? DEFAULT_TAG_SECONDARY_COLOR,
       tagFooterText: event?.tagFooterText ?? "",
+      tagFieldKeys: getInitialTagFieldKeys(
+        event?.tagFieldKeys,
+        event?.formFields.map((field) => ({
+          id: field.id,
+          label: field.label,
+          fieldKey: field.fieldKey,
+          fieldType: field.fieldType,
+          placeholder: field.placeholder ?? "",
+          helpText: field.helpText ?? "",
+          required: field.required,
+          options: field.options,
+          dependsOn: field.dependsOn,
+          conditionalOptions: field.conditionalOptions,
+          sortOrder: field.sortOrder,
+        })) ?? DEFAULT_EVENT_FORM_FIELDS
+      ),
       formFields:
         event?.formFields.map((field) => ({
           id: field.id,
@@ -608,6 +627,8 @@ export default function ManageEventForm({
             </div>
 
             <FormFieldBuilder />
+
+            <TagFieldSelector />
 
             <StepActions />
           </TabsContent>

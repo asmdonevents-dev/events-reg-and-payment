@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_EVENT_FORM_FIELDS, normalizeFieldOptions, slugifyFieldKey } from "@/lib/form-fields";
 import { slugify } from "@/lib/utils";
+import { sanitizeTagFieldKeys } from "@/lib/tag-fields";
 import { toEventUI, type EventUI } from "@/validators/types/event";
 import type { EventFormValues } from "@/validators/schemas/event";
 import { Prisma, type EventStatus } from "@prisma/client";
@@ -63,6 +64,7 @@ function mapEventInput(data: EventFormValues) {
     tagPrimaryColor: data.tagPrimaryColor,
     tagSecondaryColor: data.tagSecondaryColor,
     tagFooterText: data.tagFooterText.trim() || null,
+    tagFieldKeys: sanitizeTagFieldKeys(data.tagFieldKeys, data.formFields),
   };
 }
 
