@@ -17,7 +17,7 @@ const features = [
       "See upcoming conferences, retreats, Bible study gatherings, and other ASM programs in one place.",
     illustration: EventListingIllustration,
     icon: CalendarDays,
-    accent: "from-asm-lime-green/20 to-asm-ivory",
+    accent: "from-asm-lime-green/20 to-asm-ivory dark:from-asm-lime-green/15 dark:to-muted",
   },
   {
     title: "Simple registration",
@@ -25,7 +25,7 @@ const features = [
       "Register for ASM events in a few minutes. No account needed — just fill in the form and confirm your spot.",
     illustration: GuestRegistrationIllustration,
     icon: ClipboardList,
-    accent: "from-asm-terracotta/15 to-asm-ivory",
+    accent: "from-asm-terracotta/15 to-asm-ivory dark:from-asm-terracotta/20 dark:to-muted",
   },
   {
     title: "Secure online payment",
@@ -33,7 +33,7 @@ const features = [
       "Pay for tickets through Paystack and receive instant confirmation, email updates, and your printable name tag.",
     illustration: PaymentIllustration,
     icon: CreditCard,
-    accent: "from-asm-black/10 to-asm-ivory",
+    accent: "from-asm-black/10 to-asm-ivory dark:from-white/5 dark:to-muted",
   },
 ] as const;
 
@@ -85,7 +85,7 @@ export default function HomePage() {
           {features.map(({ title, description, illustration: Illustration, icon: Icon, accent }) => (
             <Card
               key={title}
-              className="group overflow-hidden border-asm-terracotta/15 transition-shadow hover:shadow-md"
+              className="group overflow-hidden border-border bg-card shadow-sm transition-shadow hover:shadow-md dark:border-border dark:shadow-none dark:ring-1 dark:ring-white/10"
             >
               <div
                 className={cn(

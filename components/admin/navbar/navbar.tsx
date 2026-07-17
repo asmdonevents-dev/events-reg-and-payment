@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -8,12 +8,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SearchInputComponent from "./search-input";
 import AvatarDropdownComponent from "./avatar-dropdown";
 import NotificationBtn from "./notification-btn";
+import ThemeSwitcherComponent from "./theme-switcher";
 
 const Navbar = () => {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const { toggleSidebar } = useSidebar();
-
-  useEffect(() => setMounted(true), []);
 
   if (!mounted) {
     return (
@@ -45,6 +48,7 @@ const Navbar = () => {
       </div>
 
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
+        <ThemeSwitcherComponent />
         <NotificationBtn />
         <AvatarDropdownComponent />
       </div>

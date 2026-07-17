@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/sonner";
-import { ReactQueryProvider } from "@/providers/react-query";
+import Providers from "@/providers";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -32,13 +31,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ReactQueryProvider>
-          {children}
-          <Toaster richColors position="top-right" />
-        </ReactQueryProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

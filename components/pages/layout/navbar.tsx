@@ -2,6 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import ThemeSwitcherComponent from "@/components/admin/navbar/theme-switcher";
 
 export default function PublicNavbar() {
   return (
@@ -12,6 +13,7 @@ export default function PublicNavbar() {
           ASM
         </Link>
         <div className="flex items-center gap-2">
+          <ThemeSwitcherComponent />
           <Link
             href="/events"
             className={cn(buttonVariants({ variant: "ghost" }))}

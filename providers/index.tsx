@@ -2,7 +2,7 @@
 import React from "react";
 import { ReactQueryProvider } from "./react-query";
 import { ThemeProvider } from "./theme";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -10,7 +10,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <ReactQueryProvider>
       <ThemeProvider
         attribute="class"
-        forcedTheme="light"
+        defaultTheme="system"
         enableSystem
         disableTransitionOnChange
       >
